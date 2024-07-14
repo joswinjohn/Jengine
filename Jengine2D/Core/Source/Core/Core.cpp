@@ -8,7 +8,7 @@ namespace Core {
     
 
     void World::add_obj(Object* obj) {
-        obj->Acceleration = obj->Acceleration + vec2(0.0f, gravity);
+        obj->Acceleration = obj->Acceleration + glm::vec3(0.0f, gravity, 0.0f);
         objs.push_back(obj);
     }
 

@@ -1,25 +1,30 @@
 #pragma once
 #include "../Headers/Structs.h"
+
+#include<glm/glm.hpp>
+#include<glm/gtc/matrix_transform.hpp>
+#include<glm/gtc/type_ptr.hpp>
+
 #include <vector>
 
 namespace Core {
 
 	struct Object {
-		vec2 Position, Velocity, Acceleration;
+		glm::vec3 Position, Velocity, Acceleration;
 		float Mass;
 		double Id;
 		
 
-		void exert(vec2 Force) {
+		void exert(glm::vec3 Force) {
 			Acceleration = Acceleration + (Force / Mass);
 		}
 
 		Object(
 			double i,
-			vec2 p, 
+			glm::vec3 p,
 			float m, 
-			vec2 v = vec2(0.0f, 0.0f),
-			vec2 a = vec2(0.0f, 0.0f)
+			glm::vec3 v = glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3 a = glm::vec3(0.0f, 0.0f, 0.0f)
 		) {
 			Id = i;
 			Position = p;
@@ -40,30 +45,4 @@ namespace Core {
 
 		World(float g);
     };
-
-	inline std::ostream& operator<< (std::ostream& os, const Object& obj)
-	{
-		os	<< "Id: "
-			<< obj.Id
-			<< std::endl
-			<< "Pos: "
-			<< obj.Position 
-			<< std::endl
-			<< "Vel: "
-			<< obj.Velocity 
-			<< std::endl
-			<< "Acc: "
-			<< obj.Acceleration 
-			<< std::endl;
-		return os;
-	}
-
-	inline std::ostream& operator<< (std::ostream& os, const World& w)
-	{
-		os << "G: " << w.gravity << "; " << std::endl;
-		for (Object* obj : w.objs) {
-			os << *obj << std::endl;
-		}
-		return os;
-	}
 }
