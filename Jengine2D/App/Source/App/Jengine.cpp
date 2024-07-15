@@ -107,8 +107,9 @@ void Jengine::BuildCircleMaps(int count, std::vector<Core::Object>& circles)
             glm::vec3(0.0f, 0.0f, 0.0f),
             10.0f,
             glm::vec3(
-                get_random(-2.0f, 2.0f) * (float)windowX / 2,
-                get_random(-2.0f, 2.0f) * (float)windowY / 2,
+                // temporary, change on cleanup
+                get_random(-2.0f, 2.0f),
+                get_random(-2.0f, 2.0f),
                 0.0f
             )
         );
@@ -152,15 +153,15 @@ int main()
     Renderer renderer;
 
     // Build Physics
-    Core::World base(-9.81f * (float)jengine.windowY / 2);
+    Core::World base(-9.81f);
     jengine.world = &base;
 
     std::vector<Core::Object> phy_circles;
     jengine.BuildCircleMaps(circle_count, phy_circles);
 
-    // Main Loop
-
     Vertex vertices[points * circle_count];
+
+    // Main Loop
 
     while (!glfwWindowShouldClose(jengine.window)) {
 
@@ -178,19 +179,17 @@ int main()
         // clear back buffer and set bg-color
         renderer.Clear(0.07f, 0.13f, 0.17f, 1.0f);
 
-        // Load Circle Vertex Buffers
+        // Circle Vertex SubBuffers
 
-
-        //TODO build Circle Struct
         for (int i = 0; i < circle_count; i++) {
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), base.objs[i]->Position);
+            glm::vec3 position(base.objs[i]->Position.x * (float)(jengine.windowX/2), base.objs[i]->Position.y * (float)(jengine.windowY / 2), 0.0f);
+
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
             glm::mat4 mvp = jengine.prog * jengine.view * model;
 
             std::vector<Vertex> circle = ShapeBuilder::BuildCircleArray(radius, points, glm::vec4(0.8f, 0.3f, 0.02f, 1.0f), mvp);
             memcpy(vertices + i*circle.size(), circle.data(), circle.size() * sizeof(Vertex));
         }
-
-        // Apply Buffer
 
         jengine.vbo->SubBuffer(0, sizeof(vertices), vertices);
 
@@ -198,15 +197,15 @@ int main()
 
         renderer.Draw(jengine.vao, jengine.ebo, jengine.shader);
 
-        // ImGUI Loop
+        // ImGUI Controls
 
         {
             ImGui::Begin("Edit");
 
             for (int i = 0; i < circle_count; i++) {
-                ImGui::SliderFloat2((std::string("Position ") + std::to_string(i)).c_str(), &base.objs[i]->Position.x, (float)-jengine.windowX / 2, (float)jengine.windowX / 2);
-                ImGui::SliderFloat2((std::string("Velocity ") + std::to_string(i)).c_str(), &base.objs[i]->Velocity.x, (float)-jengine.windowX / 2, (float)jengine.windowX / 2);
-                ImGui::SliderFloat2((std::string("Acceleration ") + std::to_string(i)).c_str(), &base.objs[i]->Acceleration.x, (float)-jengine.windowX / 2, (float)jengine.windowX / 2);
+                ImGui::SliderFloat2((std::string("Position ") + std::to_string(i)).c_str(), &base.objs[i]->Position.x, -100.0f, 100.0f);
+                ImGui::SliderFloat2((std::string("Velocity ") + std::to_string(i)).c_str(), &base.objs[i]->Velocity.x, -100.0f, 100.0f);
+                ImGui::SliderFloat2((std::string("Acceleration ") + std::to_string(i)).c_str(), &base.objs[i]->Acceleration.x, -100.0f, 100.0f);
             }
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / jengine.io->Framerate, jengine.io->Framerate);
