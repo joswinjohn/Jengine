@@ -7,12 +7,13 @@
 VAO::VAO()
 {
 	GLCall(glGenVertexArrays(1, &ID));
+	Bind();
 }
 
-void VAO::AddBuffer(const VBO& vbo, const VBLayout& layout)
+void VAO::AddBuffer(const VBO* vbo, const VBLayout& layout)
 {
 	Bind();
-	vbo.Bind();
+	vbo->Bind();
 	const auto& elements = layout.GetElements();
 	GLuint offset = 0;
 	for (GLuint i = 0; i < elements.size(); i++) {
@@ -26,7 +27,7 @@ void VAO::AddBuffer(const VBO& vbo, const VBLayout& layout)
 	}
 	
 	
-	vbo.Unbind();
+	vbo->Unbind();
 }
 
 void VAO::Bind() const

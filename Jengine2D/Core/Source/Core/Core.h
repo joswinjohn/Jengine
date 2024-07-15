@@ -12,7 +12,6 @@ namespace Core {
 	struct Object {
 		glm::vec3 Position, Velocity, Acceleration;
 		float Mass;
-		double Id;
 		
 
 		void exert(glm::vec3 Force) {
@@ -20,13 +19,11 @@ namespace Core {
 		}
 
 		Object(
-			double i,
 			glm::vec3 p,
 			float m, 
 			glm::vec3 v = glm::vec3(0.0f, 0.0f, 0.0f),
 			glm::vec3 a = glm::vec3(0.0f, 0.0f, 0.0f)
 		) {
-			Id = i;
 			Position = p;
 			Velocity = v;
 			Acceleration = a;

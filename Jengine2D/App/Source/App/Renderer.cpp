@@ -19,10 +19,10 @@ void Renderer::Clear(float f0, float f1, float f2, float f3) const {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void Renderer::Draw(const VAO& vao, const EBO& ebo, const Shader& shader) const {
-	shader.Bind();
-	vao.Bind();
-	ebo.Bind();
+void Renderer::Draw(const VAO* vao, const EBO* ebo, const Shader* shader) const {
+	shader->Bind();
+	vao->Bind();
+	ebo->Bind();
 
-	GLCall(glDrawElements(GL_TRIANGLES, ebo.GetCount(), GL_UNSIGNED_INT, nullptr));
+	GLCall(glDrawElements(GL_TRIANGLES, ebo->GetCount(), GL_UNSIGNED_INT, nullptr));
 }

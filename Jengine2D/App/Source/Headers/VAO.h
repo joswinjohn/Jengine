@@ -13,7 +13,7 @@ public:
 	VAO();
 	~VAO();
 
-	void AddBuffer(const VBO& vbo, const VBLayout& layout);
+	void AddBuffer(const VBO* vbo, const VBLayout& layout);
 	void Bind() const;
 	void Unbind() const;
 };

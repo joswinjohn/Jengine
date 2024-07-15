@@ -2,7 +2,8 @@
 
 #include <vector>
 #include <glad/glad.h>
-#include"Renderer.h"
+#include "Renderer.h"
+#include "Vertex.h"
 
 struct VBElement {
 	GLuint type;
@@ -44,6 +45,13 @@ public:
 	void Push<GLuint>(GLuint count) {
 		elements.push_back({ GL_UNSIGNED_INT, count, GL_FALSE });
 		stride += count * sizeof(GLuint);
+	}
+
+	template<>
+	void Push<Vertex>(GLuint count) {
+		elements.push_back({ GL_FLOAT, 2 * count, GL_FALSE });
+		elements.push_back({ GL_FLOAT, 4 * count, GL_FALSE });
+		stride += 6 * count * sizeof(GLfloat);
 	}
 
 	template<>
