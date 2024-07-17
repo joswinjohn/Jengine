@@ -35,7 +35,7 @@ int main()
     jengine.world = &base;
 
     jengine.max_count = circle_count;
-    jengine.count = 1;
+    jengine.count = 0;
     jengine.points = points;
 
     jengine.bg_color = glm::vec4(0.07f, 0.13f, 0.17f, 1.0f);
@@ -43,7 +43,7 @@ int main()
     Core::Object circles[circle_count];
     jengine.circles = circles;
     //jengine.AddCircles(circle_count);
-    jengine.AddCircle(0.04f, glm::vec4(cosf(1), sinf(1), 1 / 100.0f, 1.0f), glm::vec2(-0.2, 0.3));
+    //jengine.AddCircle(0.04f, glm::vec4(cosf(1), sinf(1), 1 / 100.0f, 1.0f), glm::vec2(-0.2, 0.3));
 
     Vertex vertices[points * circle_count];
     jengine.vertices = &vertices[0];

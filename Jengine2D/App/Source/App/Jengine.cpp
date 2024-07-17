@@ -57,6 +57,8 @@ GLFWwindow* Jengine::Init(int v_major, int v_minor, GLenum profile, int width = 
 
     gladLoadGL();
 
+    glfwMaximizeWindow(win);
+
     glViewport(0, 0, width, height);
 
     // ImGui Init
@@ -125,22 +127,23 @@ void Jengine::OnUpdate(double ts) {
     // clear back buffer and set bg-color
     renderer->Clear(bg_color);
      
-    if (fequals(fmod(runTime, 0.1 ), 0.0) && (count < max_count)) {
+    if (fequals(fmod(runTime, 0.1), 0.0) && (count < max_count)) {
         count++;
         AddCircle(r_rad(r_engine), glm::vec4(cosf(count), sinf(count), count / 100.0f, 1.0f), glm::vec2(-0.2, 0.3));
     }
+    if (count > 0) {
+        for (int i = 0; i < count; i++) {
+            glm::vec3 position(world->objs[i]->position.x * (windowX / 2), world->objs[i]->position.y * (windowY / 2), 0.0f);
 
-    for (int i = 0; i < count; i++) {
-        glm::vec3 position(world->objs[i]->position.x * (windowX / 2), world->objs[i]->position.y * (windowY / 2), 0.0f);
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
+            glm::mat4 mvp = prog * view * model;
 
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
-        glm::mat4 mvp = prog * view * model;
-        
-        std::vector<Vertex> circle = ShapeBuilder::BuildCircleArray(world->objs[i]->radius * rad_factor, points, world->objs[i]->color, mvp);
-        memcpy(vertices + i * circle.size(), circle.data(), circle.size() * sizeof(Vertex));
+            std::vector<Vertex> circle = ShapeBuilder::BuildCircleArray(world->objs[i]->radius * rad_factor, points, world->objs[i]->color, mvp);
+            memcpy(vertices + i * circle.size(), circle.data(), circle.size() * sizeof(Vertex));
+        }
+
+        vbo->SubBuffer(0, points * count * sizeof(Vertex), vertices);
     }
-
-    vbo->SubBuffer(0, points * count * sizeof(Vertex), vertices);
     // Draw
 
     renderer->Draw(vao, ebo, shader);
