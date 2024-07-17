@@ -16,6 +16,6 @@ bool GLLogCall(const char* function, const char* file, int line);
 
 class Renderer {
 public:
-	void Clear(float f0, float f1, float f2, float f3) const;
+	void Clear(glm::vec4 color) const;
 	void Draw(const VAO* vao, const EBO* ebo, const Shader* shader) const;
 };

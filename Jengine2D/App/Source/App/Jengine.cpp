@@ -1,10 +1,9 @@
 #include"../Headers/Jengine.h"
-#include "Core/Core.h"
+#include "Core/Core.hpp"
 
 // temporary, remove on cleanup
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
-
 
 // temporary, remove on cleanup
 float get_random(float min, float max)
@@ -12,6 +11,11 @@ float get_random(float min, float max)
     static std::default_random_engine e;
     static std::uniform_real_distribution<> dis(min, max);
     return dis(e);
+}
+
+bool fequals(double a, double b)
+{
+    return fabs(a - b) < 0.001;
 }
 
 Jengine::~Jengine()
@@ -24,10 +28,12 @@ Jengine::~Jengine()
     glfwTerminate();
 }
 
-GLFWwindow* Jengine::Init(int v_major, int v_minor, GLenum profile, int width = 1600, int height = 1200, const char* window_name = "Jengine", double ts = 0.01) {
+GLFWwindow* Jengine::Init(int v_major, int v_minor, GLenum profile, int width = 1200, int height = 1200, const char* window_name = "Jengine", double ts = 0.01) {
 
     windowX = width;
     windowY = height;
+
+    rad_factor = width / 2;
 
     deltaTime = ts;
 
@@ -70,30 +76,33 @@ GLFWwindow* Jengine::Init(int v_major, int v_minor, GLenum profile, int width = 
     return (win);
 }
 
-void Jengine::BuildCircleMaps(int count, std::vector<Core::Object>& circles)
+void Jengine::AddCircle(float radius, glm::vec4 color, glm::vec2 position)
 {
-    for (int i = 0; i < count; i++) {
-        Core::Object circle(
-            glm::vec3(0.0f, 0.0f, 0.0f),
-            10.0f,
-            glm::vec3(
-                // temporary, change on cleanup
-                get_random(-2.0f, 2.0f),
-                get_random(-2.0f, 2.0f),
-                0.0f
-            )
-        );
-        circles.push_back(circle);
-    }
+    static std::uniform_real_distribution<> r_rad(0.01f, 0.03f);
+    static std::uniform_real_distribution<> r_pos(-0.01f, 0.01f);
+    static std::uniform_real_distribution<> r_col(0.0f, 1.0f);
 
-    for (auto& obj : circles) {
-        world->add_obj(&obj);
-    }
+    Core::Object circle(
+        // temporary, change on cleanup
+        radius, //get_random(0.01f, 0.02f),
+        position,
+        color
+    );
+
+    circle.position_last = position;
+    circle.addVelocity(glm::vec2(0.8f, -1.0f), deltaTime);
+    circles[count-1] = circle;
+    world->add_obj(&circles[count-1]);
+    
+    std::cout << "AddedCircle: " << count - 1 << " | " << circles[count - 1].position.x << ", " << circles[count - 1].position.y << std::endl;
 }
 
 void Jengine::Run() {
     j_running = true;
     while (!glfwWindowShouldClose(window)) {
+        runTime += deltaTime;
+        world->step();
+
         OnUpdate(deltaTime);
         OnImGuiUpdate();
 
@@ -104,34 +113,34 @@ void Jengine::Run() {
 }
 
 void Jengine::OnUpdate(double ts) {
-    // Timestep Physics World
-
-    runTime += deltaTime;
-    world->step(deltaTime);
-
     // Create ImGui Window
-
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    static std::uniform_real_distribution<> r_rad(0.02f, 0.06f);
+    static std::uniform_real_distribution<> r_pos(-0.01f, 0.01f);
+    static std::uniform_real_distribution<> r_col(0.0f, 1.0f);
+
     // clear back buffer and set bg-color
-    renderer->Clear(0.07f, 0.13f, 0.17f, 1.0f);
+    renderer->Clear(bg_color);
+     
+    if (fequals(fmod(runTime, 0.1 ), 0.0) && (count < max_count)) {
+        count++;
+        AddCircle(r_rad(r_engine), glm::vec4(cosf(count), sinf(count), count / 100.0f, 1.0f), glm::vec2(-0.2, 0.3));
+    }
 
-    // Circle Vertex SubBuffers
-
-    for (int i = 0; i < circle_count; i++) {
-        glm::vec3 position(world->objs[i]->Position.x * (float)(windowX / 2), world->objs[i]->Position.y * (float)(windowY / 2), 0.0f);
+    for (int i = 0; i < count; i++) {
+        glm::vec3 position(world->objs[i]->position.x * (windowX / 2), world->objs[i]->position.y * (windowY / 2), 0.0f);
 
         glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
         glm::mat4 mvp = prog * view * model;
-
-        std::vector<Vertex> circle = ShapeBuilder::BuildCircleArray(radius, points, glm::vec4(0.8f, 0.3f, 0.02f, 1.0f), mvp);
+        
+        std::vector<Vertex> circle = ShapeBuilder::BuildCircleArray(world->objs[i]->radius * rad_factor, points, world->objs[i]->color, mvp);
         memcpy(vertices + i * circle.size(), circle.data(), circle.size() * sizeof(Vertex));
     }
 
-    vbo->SubBuffer(0, points * circle_count * sizeof(Vertex), vertices);
-
+    vbo->SubBuffer(0, points * count * sizeof(Vertex), vertices);
     // Draw
 
     renderer->Draw(vao, ebo, shader);
@@ -140,11 +149,14 @@ void Jengine::OnUpdate(double ts) {
 void Jengine::OnImGuiUpdate() {
     ImGui::Begin("Edit");
 
-    for (int i = 0; i < circle_count; i++) {
-        ImGui::SliderFloat2((std::string("Position ") + std::to_string(i)).c_str(), &world->objs[i]->Position.x, -100.0f, 100.0f);
-        ImGui::SliderFloat2((std::string("Velocity ") + std::to_string(i)).c_str(), &world->objs[i]->Velocity.x, -100.0f, 100.0f);
-        ImGui::SliderFloat2((std::string("Acceleration ") + std::to_string(i)).c_str(), &world->objs[i]->Acceleration.x, -100.0f, 100.0f);
+    ImGui::Text("Circle Count %d", count);
+
+    ImGui::BeginChild("Scrolling", ImVec2(400.0f, 200.0f));
+    for (int i = 0; i < count; i++) {
+        ImGui::SliderFloat((std::string("Radius ") + std::to_string(i)).c_str(), &world->objs[i]->radius, 0.0f, world->constraint_radius);
+        ImGui::Checkbox((std::string("Anchor ") + std::to_string(i)).c_str(), &world->objs[i]->m_anchor);
     }
+    ImGui::EndChild();
 
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
     ImGui::End();

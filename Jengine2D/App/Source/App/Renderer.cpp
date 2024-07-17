@@ -14,8 +14,8 @@ bool GLLogCall(const char* function, const char* file, int line) {
 	return true;
 }
 
-void Renderer::Clear(float f0, float f1, float f2, float f3) const {
-	glClearColor(f0, f1, f2, f3);
+void Renderer::Clear(glm::vec4 color) const {
+	glClearColor(color.r, color.g, color.b, color.a);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 

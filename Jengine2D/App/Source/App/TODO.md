@@ -1,0 +1,1 @@
+run BuildCircleArray with a radius of 1, once on Jengine::Init and store it to memory, then use the array and scale every vertex by the radius.

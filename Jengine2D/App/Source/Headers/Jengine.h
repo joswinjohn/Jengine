@@ -1,7 +1,7 @@
 #pragma once
 
 #include"../Headers/Jengine.h"
-#include "Core/Core.h"
+#include "Core/Core.hpp"
 
 // OpenGL
 #include <glad/glad.h>
@@ -32,8 +32,14 @@ class Jengine {
 public:
 	bool j_running = false;
 
-	int windowX = 1600;
-	int windowY = 1200;
+	float windowX = 1600;
+	float windowY = 1200;
+
+	glm::vec4 bg_color;
+
+	float rad_factor;
+
+	std::default_random_engine r_engine;
 
 	GLFWwindow* window;
 	ImGuiIO* io;
@@ -44,9 +50,11 @@ public:
 	VBO* vbo;
 	EBO* ebo;
 
-	int circle_count;
+	int max_count;
+	int count;
 	int points;
-	float radius;
+
+	Core::Object* circles;
 
 	Vertex* vertices;
 
@@ -57,11 +65,12 @@ public:
 
 	double runTime = 0.0;
 	double deltaTime;
+	double substepCount = 8;
 
 	~Jengine();
 
 	GLFWwindow* Init(int v_major, int v_minor, GLenum profile, int height, int width, const char* window_name, double ts);
-	void BuildCircleMaps(int count, std::vector<Core::Object>& circles);
+	void AddCircle(float radius, glm::vec4 color, glm::vec2 position);
 
 	void Run();
 	void OnUpdate(double ts);
