@@ -1,6 +1,6 @@
 # Jengine
 
-Jengine is a physics simulation engine built from scratch in c++;
+Jengine is a graphics and physics simulation engine built from scratch in c++;
 
 # Building and installing
 
