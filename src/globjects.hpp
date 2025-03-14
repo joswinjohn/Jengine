@@ -1,3 +1,4 @@
+#include <array>
 #include <cstdio>
 #include <fstream>
 #include <sstream>
@@ -10,14 +11,15 @@
 
 #define CHAR_BUFFER_SIZE
 
-class GL_object {
+class gl_object {
+public:
     std::string m_vertex_shader_string;
     std::string m_fragment_shader_string;
 
-    GL_object(const char* vertex_shader_file, const char* fragment_shader_file) {
-        unsigned int VAO;
-        unsigned int VBO;
+    unsigned int VAO;
+    unsigned int VBO;
 
+    gl_object(const char* vertex_shader_file, const char* fragment_shader_file) {
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
 
@@ -34,12 +36,35 @@ class GL_object {
     }
 };
 
-class gl_cube : GL_object {
-public:
-    // implicit structors from clang-tidy
-    gl_cube(const gl_cube&) = default;
-    gl_cube(gl_cube&&) = default;
-    gl_cube& operator=(const gl_cube&) = default;
-    gl_cube& operator=(gl_cube&&) = default;
+#define CUBE_VERTICIES 24   // 8 verticies per cube * 3 floats per vertex
+#define CUBE_INDICES 36     // 3 vertices per triangle * 12 triangles per cube
 
+class gl_cube : gl_object {
+public:
+    unsigned int EBO{};
+
+    std::array<float, CUBE_VERTICIES> vertices = {
+        // disable magic number linting
+        // NOLINTBEGIN
+        -0.5F, 0.5F, 0.0F,  // top left
+        -0.5F, -0.5F, 0.0F, // bottom left
+        0.5F, -0.5F, 0.0F,  // bottom right
+        0.5F, 0.5F, 0.0F    // top right
+        // NOLINTEND
+    };
+
+    std::array<unsigned int, CUBE_INDICES> indices = {
+        0, 1, 2,    // bottom left
+        2, 3, 0     // top right
+    };
+
+    gl_cube(const char* vertex_shader_file, const char* fragment_shader_file) : gl_object(vertex_shader_file, fragment_shader_file) {
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * CUBE_VERTICIES, vertices.data(), GL_STATIC_DRAW);
+
+        glGenBuffers(1, &EBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * CUBE_INDICES, indices.data(), GL_STATIC_DRAW);
+    }
 };

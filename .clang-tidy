@@ -15,7 +15,8 @@ Checks: "*,\
   -cppcoreguidelines-pro-type-vararg, \
   -cppcoreguidelines-prefer-member-initializer, \
   -modernize-use-default-member-init, \
-  -misc-non-private-member-variables-in-classes"
+  -misc-non-private-member-variables-in-classes, \
+  -readability-magic-numbers"
 WarningsAsErrors: ''
 CheckOptions:
   - key: 'bugprone-argument-comment.StrictMode'
