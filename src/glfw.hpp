@@ -1,9 +1,9 @@
+#pragma once
+
 #include <cstdio>
 #include <cstdlib>
-#include <GLES2/gl2.h>
-#include <EGL/egl.h>
 
-#include <GLFW/glfw3.h>
+#include "globjects.hpp"
 
 #define MAJOR_VER 3
 #define MINOR_VER 3
@@ -12,7 +12,7 @@
 
 class glfw {
 public:
-    // assign ..structors as default due to non-default deconstructor (suggested by clang-tidy)
+    // implicit structors from clang-tidy
     glfw(const glfw&) = default;
     glfw(glfw&&) = delete;
     glfw& operator=(const glfw&) = default;
@@ -86,9 +86,9 @@ struct window {
         }
 
         // exit glfw safely
-        glfw::exit(-1);
+        glfw::exit(0);
     }
-
+    
     void update() const {
         glClearColor(BACKGROUND_COLOR);
         glClear(GL_COLOR_BUFFER_BIT);
